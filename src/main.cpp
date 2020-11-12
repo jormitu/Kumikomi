@@ -42,14 +42,7 @@ void loop()
   if (digitalRead(Switch) == 0)
   {
     state++;
-    delay(100);                      //チャタリング防止
-    while (digitalRead(Switch) == 0) //ボタンが放されるのを末
-    {
-    }
-  }
-
-  if ((state % 2) == 1)
-  {
+    delay(100);              //チャタリング防止
     digitalWrite(latch, 0);  //7segoff
     SPI.transfer(digits[j]); //10の位
     SPI.transfer(digits[i]); //1の位
@@ -66,7 +59,30 @@ void loop()
     {
       j = 0;
     }
+    while (digitalRead(Switch) == 0) //ボタンが放されるのを末
+    {
+    }
   }
+
+  // if ((state % 2) == 1)
+  // {
+  //   digitalWrite(latch, 0);  //7segoff
+  //   SPI.transfer(digits[j]); //10の位
+  //   SPI.transfer(digits[i]); //1の位
+  //   digitalWrite(latch, 1);  //7segon
+  //   delay(100);
+
+  //   i++;
+  //   if (i >= 10)
+  //   {
+  //     i = 0;
+  //     j++;
+  //   }
+  //   if (j >= 10)
+  //   {
+  //     j = 0;
+  //   }
+  // }
 
   Serial.println("state=");
   Serial.print(state);
