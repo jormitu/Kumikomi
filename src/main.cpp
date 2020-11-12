@@ -17,11 +17,8 @@ const byte digits[] = {
 };
 int latch = 10;
 int Switch = 2;
-int i, j = 0;//7seg用
-long randNumber;//乱数用
-
-int a = 0;
-int b = 0;
+int i, j = 0;
+int state = 0;
 
 void setup()
 {
@@ -41,34 +38,36 @@ void setup()
 
 void loop()
 {
-  //digitalWrite(latch, 1); //7segoff
-  int state = digitalRead(Switch);
 
-  while (digitalRead(Switch) == 0)
+  if (digitalRead(Switch) == 0)
   {
-    randNumber = random(76); // 0から75の乱数を生成
-    a = randNumber / 10;
-    b = randNumber % 10;
+    state++;
+    delay(100);                      //チャタリング防止
+    while (digitalRead(Switch) == 0) //ボタンが放されるのを末
+    {
+    }
+  }
 
-    digitalWrite(latch, 0);   //7segoff
-    SPI.transfer(digits[a]);  //10の位
-    SPI.transfer(digits[b]);  //1の位
-    digitalWrite(latch, 1);   //7segon
+  if ((state % 2) == 1)
+  {
+    digitalWrite(latch, 0);  //7segoff
+    SPI.transfer(digits[j]); //10の位
+    SPI.transfer(digits[i]); //1の位
+    digitalWrite(latch, 1);  //7segon
     delay(100);
 
-    // i++;
-    // if (i >= 10)
-    // {
-    //   i = 0;
-    //   j++;
-    // }
-    // if (j >= 10)
-    // {
-    //   j = 0;
-    // }
-    // Serial.print("i=");
-    // Serial.print(i);
-    // Serial.print("j=");
-    // Serial.println(j);
+    i++;
+    if (i >= 10)
+    {
+      i = 0;
+      j++;
+    }
+    if (j >= 10)
+    {
+      j = 0;
+    }
   }
+
+  Serial.println("state=");
+  Serial.print(state);
 }
