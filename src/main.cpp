@@ -19,7 +19,19 @@ int latch = 10;
 int Switch = 2;
 int i, j = 0;
 int state = 0;
+int sensorPin = A0; //アナログ0番ピンを指定
+int sensorValue = 0;
 
+int a = 0;
+int b = 0;
+
+//アナログ入力値を摂氏度℃に変換
+float modTemp(float analog_val)
+{
+  float v = 5;                                   // 基準電圧値( V )
+  float tempC = ((v * analog_val) / 1024) * 100; // 摂氏に換算
+  return tempC;
+}
 void setup()
 {
   Serial.begin(9600);
@@ -38,52 +50,20 @@ void setup()
 
 void loop()
 {
+  float sensor = analogRead(sensorPin);
+  float temp = modTemp(sensor);
 
-  if (digitalRead(Switch) == 0)
-  {
-    state++;
-    delay(100);              //チャタリング防止
-    digitalWrite(latch, 0);  //7segoff
-    SPI.transfer(digits[j]); //10の位
-    SPI.transfer(digits[i]); //1の位
-    digitalWrite(latch, 1);  //7segon
-    delay(100);
+  a = (int)temp / 10;
+  b = (int)temp % 10;
 
-    i++;
-    if (i >= 10)
-    {
-      i = 0;
-      j++;
-    }
-    if (j >= 10)
-    {
-      j = 0;
-    }
-    while (digitalRead(Switch) == 0) //ボタンが放されるのを末
-    {
-    }
-  }
+  digitalWrite(latch, 0);  //7segoff
+  SPI.transfer(digits[a]); //10の位
+  SPI.transfer(digits[b]); //1の位
+  digitalWrite(latch, 1);  //7segon
+  delay(100);
 
-  // if ((state % 2) == 1)
-  // {
-  //   digitalWrite(latch, 0);  //7segoff
-  //   SPI.transfer(digits[j]); //10の位
-  //   SPI.transfer(digits[i]); //1の位
-  //   digitalWrite(latch, 1);  //7segon
-  //   delay(100);
-
-  //   i++;
-  //   if (i >= 10)
-  //   {
-  //     i = 0;
-  //     j++;
-  //   }
-  //   if (j >= 10)
-  //   {
-  //     j = 0;
-  //   }
-  // }
-
-  Serial.println("state=");
-  Serial.print(state);
+  Serial.print("Analog");
+  Serial.print(sensor);
+  Serial.print("  ℃=");
+  Serial.println(temp);
 }
