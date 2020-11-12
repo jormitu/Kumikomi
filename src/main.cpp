@@ -17,27 +17,50 @@ const byte digits[] = {
 };
 int latch = 10;
 int Switch = 2;
+int i, j = 0;
 void setup()
 {
+  Serial.begin(9600);
   pinMode(latch, OUTPUT); //CS(チップセレクト)SS(スレーブセレクト)
   pinMode(Switch, INPUT_PULLUP);
   SPI.begin();
   SPI.setBitOrder(LSBFIRST);
   SPI.setDataMode(0);
+
+  //00表示
+  digitalWrite(latch, 0); //7segoff
+  SPI.transfer(digits[0]);
+  SPI.transfer(digits[0]);
+  digitalWrite(latch, 1); //7segon
 }
 
 void loop()
 {
   //digitalWrite(latch, 1); //7segoff
+  int state = digitalRead(Switch);
 
-  for (int j = 0; j < 10; j++)
+  while (digitalRead(Switch) == 0)
   {
-    for (int i = 0; i < 10; i++)
+
+    digitalWrite(latch, 0);  //7segoff
+    SPI.transfer(digits[j]); //10の位
+    SPI.transfer(digits[i]); //1の位
+    digitalWrite(latch, 1);  //7segon
+    delay(100);
+
+    i++;
+    if (i >= 10)
     {
-      digitalWrite(latch, 0); //7segoff
-      SPI.transfer(digits[j]);
-      SPI.transfer(digits[i]);
-      digitalWrite(latch, 1); //7segon
-      delay(100);
+      i = 0;
+      j++;
     }
+    if (j >= 10)
+    {
+      j = 0;
+    }
+    Serial.print("i=");
+    Serial.print(i);
+    Serial.print("j=");
+    Serial.println(j);
   }
+}
