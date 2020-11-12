@@ -28,12 +28,13 @@ int b = 0;
 //アナログ入力値を摂氏度℃に変換
 float modTemp(float analog_val)
 {
-  float v = 5;                                   // 基準電圧値( V )
+  float v = 2.56;                                // 基準電圧値( V )
   float tempC = ((v * analog_val) / 1024) * 100; // 摂氏に換算
   return tempC;
 }
 void setup()
 {
+  analogReference(INTERNAL);
   Serial.begin(9600);
   pinMode(latch, OUTPUT); //CS(チップセレクト)SS(スレーブセレクト)
   pinMode(Switch, INPUT_PULLUP);
