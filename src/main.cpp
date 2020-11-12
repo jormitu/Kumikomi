@@ -17,6 +17,7 @@ const byte digits[] = {
 };
 int latch = 10;
 int Switch = 2;
+int LED = 11;
 int i, j = 0;
 int state = 0;
 int sensorPin = A0; //アナログ0番ピンを指定
@@ -38,6 +39,7 @@ void setup()
   Serial.begin(9600);
   pinMode(latch, OUTPUT); //CS(チップセレクト)SS(スレーブセレクト)
   pinMode(Switch, INPUT_PULLUP);
+  pinMode(LED, OUTPUT);
   SPI.begin();
   SPI.setBitOrder(LSBFIRST);
   SPI.setDataMode(0);
@@ -61,7 +63,15 @@ void loop()
   SPI.transfer(digits[a]); //10の位
   SPI.transfer(digits[b]); //1の位
   digitalWrite(latch, 1);  //7segon
-  delay(100);
+
+  if (temp > 25)
+  {
+    digitalWrite(LED, HIGH);
+  }
+  else
+  {
+    digitalWrite(LED, LOW);
+  }
 
   Serial.print("Analog");
   Serial.print(sensor);
