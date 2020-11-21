@@ -1,93 +1,73 @@
-#include <SPI.h>
-#include <MsTimer2.h>
+//#include <Arduino.h>
+//  押しボタン式信号機の制御
 
-const byte digits[] = {
-    // const ：定数 byte ：符号 なし 8 ビットデータ
-    0b11111100, // 0
-    0b01100000, // 1
-    0b11011010, // 2
-    0b11110010, // 3
-    0b01100110, // 4
-    0b10110110, // 5
-    0b10111110, // 6
-    0b11100000, // 7
-    0b11111110, // 8
-    0b11110110, // 9
-    0b00000001, // DP
-};
+// 車道用信号機
+int mainRed = 10;
+int mainYellow = 11;
+int mainGreen = 12;
 
-int latch = 10;
-int Switch = 2;
-int LED = 9;
-int i, j = 0;
-int state = 0;
-int sensorPin = A0; //アナログ0番ピンを指定
-int sensorValue = 0;
+// 歩行者用信号機
+int crossRed = 8;
+int crossGreen = 9;
+int button = 7;
+int crossTime = 4000; // 歩行者用横断時間
 
-int n1 = 0;
-int n01 = 0;
-
-// 割り込み時に処理される関数
-void flash()
-{
-  static boolean output = HIGH; // プログラム起動前に１回だけHIGH(1)で初期化される
-
-  digitalWrite(LED, output); // 13番ピン(LED)に出力する(HIGH>ON LOW>OFF)
-  output = !output;          // 現在のoutput内容を反転(HIGH→LOW/LOW→HIGH)させoutputにセットする
-}
-
-//アナログ入力値を摂氏度℃に変換
-float modTemp(float analog_val)
-{
-  float v = 2.56;                                // 基準電圧値( V )
-  float tempC = ((v * analog_val) / 1023) * 100; // 摂氏に換算
-  return tempC;
-}
 void setup()
 {
-  analogReference(INTERNAL);
-  Serial.begin(9600);
-  pinMode(latch, OUTPUT); //CS(チップセレクト)SS(スレーブセレクト)
-  pinMode(Switch, INPUT_PULLUP);
-  pinMode(LED, OUTPUT);
-  SPI.begin();
-  SPI.setBitOrder(LSBFIRST);
-  SPI.setDataMode(0);
-
-  //00表示
-  digitalWrite(latch, 0); //7segoff
-  SPI.transfer(digits[0]);
-  SPI.transfer(digits[0]);
-  digitalWrite(latch, 1); //7segon
-
-  MsTimer2::set(500, flash); // 500ms毎にflash( )割込み関数を呼び出す様に設定
-  MsTimer2::start();         // タイマー割り込み開始
+  pinMode(mainRed, OUTPUT);
+  pinMode(mainYellow, OUTPUT);
+  pinMode(mainGreen, OUTPUT);
+  pinMode(crossRed, OUTPUT);
+  pinMode(crossGreen, OUTPUT);
+  pinMode(button, INPUT_PULLUP); // プルアップ有効
+  //digitalWrite(mainGreen, HIGH); //　車道用初期状態（緑）
+  //digitalWrite(crossRed, HIGH);  //　歩行者用初期状態（赤）
 }
 
 void loop()
 {
-  //温度センサ読み取り
-  float sum = 0;
-  for (int i = 0; i < 10; i++)
-  {
-    float val = analogRead(sensorPin);
-    sum = sum + val;
-    delay(100);
-  }
 
-  float T = sum / 10;
-  float temp = modTemp(T);
+  int state = digitalRead(button); // 押しボタンのチェック
+  digitalWrite(crossGreen, LOW);   //　車道用初期状態（緑）
+  digitalWrite(mainRed, HIGH);
+  digitalWrite(mainYellow, LOW);
+  digitalWrite(mainGreen, LOW);
+  delay(200);
 
-  n1 = (int(10 * temp) % 100) / 10;
-  n01 = (int(10 * temp) % 100) % 10;
+  digitalWrite(mainRed, LOW);
+  digitalWrite(mainYellow, HIGH);
+  digitalWrite(mainGreen, LOW);
+  delay(200);
 
-  digitalWrite(latch, 0);       //7segoff
-  SPI.transfer(digits[n1] + 1); //1の位(+1でDP表示付き)
-  SPI.transfer(digits[n01]);    //0.1の位
-  digitalWrite(latch, 1);       //7segon
+  digitalWrite(mainRed, LOW);
+  digitalWrite(mainYellow, LOW);
+  digitalWrite(mainGreen, HIGH);
+  delay(200);
 
-  Serial.print("Analog");
-  Serial.print(T);
-  Serial.print("  ℃=");
-  Serial.println(temp);
+  digitalWrite(mainGreen, LOW);
+  digitalWrite(crossGreen, LOW); //　車道用初期状態（緑）
+  digitalWrite(crossRed, HIGH);  //　歩行者用初期状態（赤）
+  delay(200);
+  digitalWrite(crossGreen, HIGH); //　車道用初期状態（緑）
+  digitalWrite(crossRed, LOW);    //　歩行者用初期状態（赤）
+  delay(200);
+  // 押しボタンが押されたか？
+  // if()
+  // {
+  //   delay(2000); //  車道用が黄色に変わるまでの時間
+  //   switchLights();
+  // }
+}
+
+void switchLights()
+{
+
+  //緑点滅10回（0.25s間隔）
+  // for(){
+
+  // }
+
+  digitalWrite(crossRed, HIGH);  //　歩行者用赤をON
+  digitalWrite(mainGreen, HIGH); //　車道用緑をON
+  digitalWrite(mainRed, LOW);    //　車道用赤をOFF
 }
