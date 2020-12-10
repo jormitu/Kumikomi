@@ -23,23 +23,9 @@ void setup()
 
 void loop()
 {
-  //温度センサ読み取り
-  // float sum = 0;
-  // for (int i = 0; i < 10; i++)
-  // {
-  //   float val = analogRead(sensorPin);
-  //   sum = sum + val;
-  //   delay(100);
-  // }
 
-  // float T = sum / 10;
-  // float temp = modTemp(T);
-
-  lcd.setCursor(0, 1); //2行目一列にカーソル位置を指定
-  lcd.print(millis() / 1000);
-
-  // Serial.print("Analog");
-  // Serial.print(T);
-  // Serial.print("  ℃=");
-  // Serial.println(temp);
+  lcd.display();
+  delay(1000);
+  lcd.noDisplay();
+  delay(1000);
 }
