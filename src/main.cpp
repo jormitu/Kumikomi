@@ -15,17 +15,28 @@ float modTemp(float analog_val)
 }
 void setup()
 {
-  //analogReference(INTERNAL);
+  analogReference(INTERNAL);
   Serial.begin(9600);
   lcd.begin(16, 2);
-  lcd.println("hello,world!!");
+  lcd.println("Hello Arduino!!");
 }
 
 void loop()
 {
+  //温度センサ読み取り
+  float sum = 0;
+  for (int i = 0; i < 10; i++)
+  {
+    float val = analogRead(sensorPin);
+    sum = sum + val;
+    delay(100);
+  }
 
-  lcd.display();
-  delay(1000);
-  lcd.noDisplay();
-  delay(1000);
+  float T = sum / 10;
+  float temp = modTemp(T);
+
+  lcd.setCursor(0, 1); //2行目一列にカーソル位置を指定
+  lcd.print("temp=");
+  lcd.print(temp);
+  lcd.print("deg");
 }
