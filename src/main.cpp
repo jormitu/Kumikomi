@@ -1,24 +1,31 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <I2CLiquidCrystal.h>
 
 // デバイスアドレス(スレーブ)
 uint8_t DEVICE_ADDRESS = 0x53; //SDO=GNDに接続した場合
+I2CLiquidCrystal lcd(0x3c, (uint8_t)127);
 
 // XYZレジスタ用のテーブル(6byte)
 uint8_t RegTbl[6];
 
-int pin = 13;
+int LED = 13;
+int buzzer = 12;
 volatile int state = LOW; //グローバル変数として定義
 
 void blink()
 {
   state = !state;
 }
+
 void setup()
 {
   Serial.begin(9600);
-  pinMode(pin, OUTPUT);
-  pinMode(7, INPUT_PULLUP);
+  pinMode(LED, OUTPUT);     //LED
+  pinMode(buzzer, OUTPUT);  //buzzer
+  pinMode(7, INPUT_PULLUP); //タクトスイッチ(プルアップ)
+  lcd.begin(16, 2);
+
   attachInterrupt(digitalPinToInterrupt(7), blink, CHANGE); //orattachInterrupt(4, blink, CHANGE);
 
   // マスタとしてI2Cバスに接続する
@@ -45,7 +52,10 @@ void setup()
 
 void loop()
 {
-  digitalWrite(pin, state);
+  digitalWrite(LED, state); //LED表示
+  noTone(buzzer);           //ブザーOFF
+  lcd.clear();              //lcdの表示を再起動
+
   // XYZの先頭アドレスに移動する
   Wire.beginTransmission(DEVICE_ADDRESS);
   Wire.write(0x32);
@@ -69,14 +79,24 @@ void loop()
   int16_t y = (((int16_t)RegTbl[3]) << 8) | RegTbl[2];
   int16_t z = (((int16_t)RegTbl[5]) << 8) | RegTbl[4];
 
-  // 各XYZ軸の加速度(m/s^2)を出力する
-  Serial.print("X : ");
-  Serial.print(x * 0.0041); //4.1/1000*9.80665
-  Serial.print(" Y : ");
-  Serial.print(y * 0.0041);
-  Serial.print(" Z : ");
-  Serial.print((z * 0.0041 + 0.02));
-  Serial.println("g");
+  float x_theta = asin(x * 0.0041 / 1) * 180 / PI; //radian to degree
+  float y_theta = asin(y * 0.0041 / 1) * 180 / PI;
+
+  //角度が絶対値20度以上
+  if (abs(x_theta) > 20)
+  {
+    tone(buzzer, 262); // ドの音を鳴らす
+  }
+
+  //lcd表示
+  lcd.setCursor(0, 0); //2行目0列にカーソル位置を指定
+  lcd.print("x_deg=");
+  lcd.print(x_theta);
+  lcd.print("deg");
+  lcd.setCursor(0, 1); //2行目1列目にカーソル位置を指定
+  lcd.print("y_deg=");
+  lcd.print(y_theta);
+  lcd.print("deg");
 
   delay(100);
 }
