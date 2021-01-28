@@ -11,11 +11,16 @@ uint8_t RegTbl[6];
 
 int LED = 13;
 int buzzer = 12;
-volatile int state = LOW; //グローバル変数として定義
+int x = 0;
+volatile int state = 0; //グローバル変数として定義
 
 void blink()
 {
-  state = !state;
+  if ((x % 2) == 1)
+  {
+    state = !state;
+  }
+  x++;
 }
 
 void setup()
@@ -52,9 +57,9 @@ void setup()
 
 void loop()
 {
-  digitalWrite(LED, state); //LED表示
-  noTone(buzzer);           //ブザーOFF
-  lcd.clear();              //lcdの表示を再起動
+  digitalWrite(LED, state % 2); //LED表示
+  noTone(buzzer);               //ブザーOFF
+  //lcd.clear();              //lcdの表示を再起動
 
   // XYZの先頭アドレスに移動する
   Wire.beginTransmission(DEVICE_ADDRESS);
@@ -83,7 +88,7 @@ void loop()
   float y_theta = asin(y * 0.0041 / 1) * 180 / PI;
 
   //角度が絶対値20度以上
-  if (abs(x_theta) > 20)
+  if (abs(x_theta) > 20 || abs(y_theta) > 20)
   {
     tone(buzzer, 262); // ドの音を鳴らす
   }
