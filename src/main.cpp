@@ -9,14 +9,15 @@ I2CLiquidCrystal lcd(0x3c, (uint8_t)127);
 // XYZレジスタ用のテーブル(6byte)
 uint8_t RegTbl[6];
 
-int LED = 13;
-int buzzer = 12;
-int x = 0;
+int LED = 13;           //内部LED
+int buzzer = 12;        //圧電ブザー用ピン
+int x = 0;              //スイッチカウント用
 volatile int state = 0; //グローバル変数として定義
 
+//スイッチ押し回数カウント
 void blink()
 {
-  if ((x % 2) == 1)
+  if ((x % 2) == 1) //奇数回押された
   {
     state = !state;
   }
@@ -25,13 +26,13 @@ void blink()
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(9600);       //シリアルモニタ
   pinMode(LED, OUTPUT);     //LED
   pinMode(buzzer, OUTPUT);  //buzzer
   pinMode(7, INPUT_PULLUP); //タクトスイッチ(プルアップ)
-  lcd.begin(16, 2);
+  lcd.begin(16, 2);         //lcd起動(16列2行準備)
 
-  attachInterrupt(digitalPinToInterrupt(7), blink, CHANGE); //orattachInterrupt(4, blink, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(7), blink, CHANGE); //or attachInterrupt(4, blink, CHANGE);
 
   // マスタとしてI2Cバスに接続する
   Wire.begin();
@@ -87,7 +88,7 @@ void loop()
   float x_theta = asin(x * 0.0041 / 1) * 180 / PI; //radian to degree
   float y_theta = asin(y * 0.0041 / 1) * 180 / PI;
 
-  //角度が絶対値20度以上
+  //角度が絶対値20度以上(xy座標共通)
   if (abs(x_theta) > 20 || abs(y_theta) > 20)
   {
     tone(buzzer, 262); // ドの音を鳴らす
@@ -103,5 +104,5 @@ void loop()
   lcd.print(y_theta);
   lcd.print("deg");
 
-  delay(100);
+  delay(100); //100ms待
 }
